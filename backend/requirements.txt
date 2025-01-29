@@ -1,0 +1,15 @@
+Flask
+Flask-JWT-Extended
+flask-marshmallow
+loguru
+gunicorn
+marshmallow
+pytest
+python-dotenv
+requests
+Flask-Migrate
+Flask-SQLAlchemy
+marshmallow-sqlalchemy
+python-keycloak
+psycopg2-binary
+sqlalchemy
