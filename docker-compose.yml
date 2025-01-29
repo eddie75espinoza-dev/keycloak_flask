@@ -1,0 +1,82 @@
+version: '3.8'
+
+networks:
+  cloaktest_net:
+    name: cloaktest_net
+    driver: bridge
+
+services:
+  backend:
+    image: cloaktest:${DOCKER_TAG:-latest}
+    build: ./backend
+    container_name: cloaktest
+    restart: always
+    ports:
+      - "${PORT}:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      - postgres
+      - keycloak
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: > 
+      bash -c "if [ '${ENVIRONMENT}' = 'production' ]; then \
+        gunicorn \
+        --timeout 120 \
+        --workers 4 \
+        --bind '${HOST}:5000' \
+        --access-logfile './logs/gunicorn-access.log' \
+        --error-logfile './logs/gunicorn-error.log' \
+        'app:app'; \
+      else \
+        flask run --debug -p 5000 --host=${HOST}; \
+      fi"
+    networks:
+      - cloaktest_net
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data-static:/var/lib/postgresql/data
+    networks:
+      - cloaktest_net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: "localhost"
+      KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_DB: "postgres"
+      KC_DB_URL_HOST: "postgres"
+      KC_DB_URL_PORT: "5432"
+      KC_DB_URL_DATABASE: "keycloak"
+      KC_DB_USERNAME: "postgres"
+      KC_DB_PASSWORD: "postgres"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    depends_on:
+      - postgres
+    networks:
+      - cloaktest_net
+    command: start --http-enabled=true
+
+volumes:
+  db-data-static:
+  keycloak_data:
