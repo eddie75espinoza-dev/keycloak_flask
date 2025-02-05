@@ -1,4 +1,4 @@
-# cloaktest
+# Cloaktest
 
 ![Static Badge](https://img.shields.io/badge/Estatus-En%20Desarrollo-yellow)
 ![Static Badge](https://img.shields.io/badge/Versi%C3%B3n-1.0.0-blue)
@@ -7,7 +7,7 @@
 
 ## **Descripción General**
 
-Prueba de login con keycloak
+Prueba de login con keycloak con flujo standard
 
 ## Índice
 
